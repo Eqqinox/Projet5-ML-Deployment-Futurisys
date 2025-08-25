@@ -1,3 +1,13 @@
+---
+title: Futurisys ML API
+emoji: 🤖
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_file: hf_app.py
+pinned: false
+---
+
 # Projet5 - ML Deployment Futurisys
 
 **Déploiement d'un modèle de Machine Learning XGBoost avec FastAPI, PostgreSQL et CI/CD**

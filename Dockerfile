@@ -19,12 +19,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copier le code de l'application
-COPY app/ ./app/
-COPY README.md .
-
-# Créer le point d'entrée pour HF Spaces
+# Copier le point d'entrée pour HF Spaces
 COPY hf_app.py .
+COPY README.md .
 
 # Exposer le port requis par HF Spaces
 EXPOSE 7860

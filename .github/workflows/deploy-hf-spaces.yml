@@ -1,0 +1,58 @@
+name: Deploy to Hugging Face Spaces
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install fastapi uvicorn
+    
+    - name: Test FastAPI app
+      run: |
+        python -c "from hf_app import app; print('FastAPI app loads successfully')"
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        lfs: true
+    
+    - name: Push to Hugging Face Spaces
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      run: |
+        git config --global user.email "actions@github.com"
+        git config --global user.name "GitHub Actions"
+        
+        # Clone HF Space repo
+        git clone https://huggingface.co/spaces/Eqqinox/futurisys-ml-api hf-space
+        cd hf-space
+        
+        # Copy files from GitHub repo to HF Space
+        cp ../Dockerfile .
+        cp ../hf_app.py .
+        cp ../requirements.txt .
+        cp ../README.md .
+        
+        # Commit and push to HF Space
+        git add .
+        git commit -m "Auto-deploy from GitHub" || exit 0
+        git push https://Eqqinox:$HF_TOKEN@huggingface.co/spaces/Eqqinox/futurisys-ml-api main

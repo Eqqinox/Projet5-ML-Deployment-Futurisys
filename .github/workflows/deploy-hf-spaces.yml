@@ -2,6 +2,8 @@ name: Deploy to Hugging Face Spaces
 
 on:
   push:
+    branches: [ main, develop ]
+  pull_request:
     branches: [ main ]
 
 jobs:
@@ -25,7 +27,37 @@ jobs:
       run: |
         python -c "from hf_app import app; print('FastAPI app loads successfully')"
 
-  deploy:
+  deploy-dev:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        lfs: true
+    
+    - name: Deploy to Development
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      run: |
+        echo "Deploying to DEVELOPMENT environment"
+        git config --global user.email "actions@github.com"
+        git config --global user.name "GitHub Actions"
+        
+        git clone https://huggingface.co/spaces/Eqqinox/futurisys-ml-api hf-space
+        cd hf-space
+        
+        cp ../Dockerfile .
+        cp ../hf_app.py .
+        cp ../requirements.txt .
+        cp ../README.md .
+        
+        git add .
+        git commit -m "Deploy to DEV: ${{ github.sha }}" || exit 0
+        git push https://Eqqinox:$HF_TOKEN@huggingface.co/spaces/Eqqinox/futurisys-ml-api main
+
+  deploy-prod:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
@@ -35,24 +67,22 @@ jobs:
       with:
         lfs: true
     
-    - name: Push to Hugging Face Spaces
+    - name: Deploy to Production
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
       run: |
+        echo "Deploying to PRODUCTION environment"
         git config --global user.email "actions@github.com"
         git config --global user.name "GitHub Actions"
         
-        # Clone HF Space repo
         git clone https://huggingface.co/spaces/Eqqinox/futurisys-ml-api hf-space
         cd hf-space
         
-        # Copy files from GitHub repo to HF Space
         cp ../Dockerfile .
         cp ../hf_app.py .
         cp ../requirements.txt .
         cp ../README.md .
         
-        # Commit and push to HF Space
         git add .
-        git commit -m "Auto-deploy from GitHub" || exit 0
+        git commit -m "Deploy to PROD: ${{ github.sha }}" || exit 0
         git push https://Eqqinox:$HF_TOKEN@huggingface.co/spaces/Eqqinox/futurisys-ml-api main

@@ -76,4 +76,4 @@ Ce projet implémente les meilleures pratiques de **Machine Learning Operations 
 1. **Cloner le repository**
 ```bash
 git clone https://github.com/Eqqinox/projet5-ml-deployment.git
-cd Projet5
+cd Projet5# Test final infrastructure CI/CD

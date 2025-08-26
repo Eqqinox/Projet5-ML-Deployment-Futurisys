@@ -2,7 +2,6 @@
 Point d'entrée pour Hugging Face Spaces - Projet Futurisys
 API FastAPI minimale pour tester le déploiement HF Spaces
 """
-
 import uvicorn
 import os
 from fastapi import FastAPI
@@ -29,7 +28,8 @@ async def info():
         "project": "Projet5 ML Deployment",
         "client": "Futurisys",
         "stack": ["FastAPI", "XGBoost", "PostgreSQL"],
-        "environment": "Hugging Face Spaces"
+        "environment": "development",
+        "branch": "develop"
     }
 
 if __name__ == "__main__":

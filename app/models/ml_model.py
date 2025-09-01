@@ -277,11 +277,7 @@ class MLModel:
         """
         Retourne les informations sur le modèle
         """
-        return 
-    def get_model_info(self) -> Dict:
-        """
-        Retourne les informations sur le modèle
-        """
+        
         base_info = {
             "model_name": "XGBoost Employee Attrition Classifier",
             "model_type": "XGBoost Classifier", 
@@ -305,13 +301,18 @@ class MLModel:
                 "categorical_variables_encoded": self.variables_catego,
             })
         
-        # À COMPLÉTER avec vos vraies métriques du Projet 4
+        # Métriques réelles du modèle avec validation croisée stratifiée
         base_info["performance_metrics"] = {
-            "accuracy": 0.8537,      # Vos vraies métriques
-            "precision": 0.5400,     # Vos vraies métriques  
-            "recall": 0.5745,        # Vos vraies métriques
-            "f1_score": 0.5567,      # Vos vraies métriques
-            "roc_auc": 0.8270        # Vos vraies métriques
+            "accuracy": 0.8588,          # CV moyenne
+            "accuracy_std": 0.0220,      # Écart-type CV
+            "precision": 0.5654,         # CV moyenne  
+            "precision_std": 0.0701,     # Écart-type CV
+            "recall": 0.5684,            # CV moyenne
+            "recall_std": 0.0678,        # Écart-type CV
+            "f1_score": 0.5656,          # CV moyenne
+            "f1_std": 0.0638,            # Écart-type CV
+            "roc_auc": 0.8252,           # CV moyenne
+            "roc_auc_std": 0.0212        # Écart-type CV
         }
         
         return base_info

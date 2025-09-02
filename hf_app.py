@@ -5,7 +5,8 @@ import uvicorn
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "app")))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 print("Chemin sys.path:", sys.path)
 
 from app.main import app

@@ -2,10 +2,10 @@
 FROM python:3.11-slim
 
 # Définir le répertoire de travail
-WORKDIR /app
+WORKDIR /code
 
 # Variables d'environnement pour HF Spaces
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/code
 ENV PORT=7860
 
 # Installer les dépendances système nécessaires
@@ -19,10 +19,14 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copier le code source
-COPY app/ ./app/
-COPY hf_app.py .
-COPY README.md .
+# Copier TOUT le contenu du projet (plus robuste)
+COPY . .
+
+# Créer le dossier logs si nécessaire
+RUN mkdir -p logs
+
+# Vérifier que la structure est bien copiée (debug)
+RUN ls -la app/ || echo "app directory not found"
 
 # Exposer le port requis par HF Spaces
 EXPOSE 7860

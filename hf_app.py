@@ -3,6 +3,10 @@ Point d'entrée pour Hugging Face Spaces - Version production
 """
 import uvicorn
 import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from app.main import app
 
 if __name__ == "__main__":

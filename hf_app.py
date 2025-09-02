@@ -5,9 +5,7 @@ import uvicorn
 import os
 import sys
 
-# On ajoute le dossier racine du projet au PYTHONPATH
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, BASE_DIR)
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "app")))
 
 print("Chemin sys.path:", sys.path)
 

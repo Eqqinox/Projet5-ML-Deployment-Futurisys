@@ -54,7 +54,7 @@ app = FastAPI(
     
     * **Algorithme** : XGBoost Classifier
     * **Variable cible** : a_quitte_l_entreprise (Oui/Non)
-    * **Features** : 26 variables d'entrée (satisfaction, évaluation, démographie, etc.)
+    * **Features** : 27 variables d'entrée (satisfaction, évaluation, démographie, etc.)
     """,
     version="1.0.0",
     contact={
@@ -93,7 +93,7 @@ async def get_api_info():
         "client": "Futurisys",
         "model_type": "XGBoost Classifier",
         "prediction_target": "Employee Attrition (a_quitte_l_entreprise)",
-        "features_count": 26,
+        "features_count": 27,
         "version": "1.0.0",
         "environment": settings.ENVIRONMENT,
         "model_loaded": hasattr(app.state, 'ml_model') and app.state.ml_model is not None

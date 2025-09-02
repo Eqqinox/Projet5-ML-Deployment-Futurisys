@@ -5,9 +5,11 @@ import uvicorn
 import os
 import sys
 
+# Ajouter le sous-dossier app au chemin de recherche
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "app")))
 
-print("Chemin sys.path:", sys.path)
+print("Chemin sys.path:", sys.path)  # Pour déboguer
+print("Contenu de /app:", os.listdir(os.path.dirname(__file__)))  # Pour lister les fichiers
 
 from app.main import app
 

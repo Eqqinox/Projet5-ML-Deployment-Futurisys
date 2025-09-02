@@ -5,7 +5,6 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Variables d'environnement pour HF Spaces
-ENV PYTHONPATH=/app
 ENV PORT=7860
 
 # Installer les dépendances système nécessaires

@@ -1,4 +1,4 @@
-# Dockerfile pour Hugging Face Spaces - Version debug
+# Dockerfile pour Hugging Face Spaces - Projet Futurisys
 FROM python:3.11-slim
 
 # Définir le répertoire de travail
@@ -19,20 +19,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Debug : Vérifier l'état avant copie
-RUN echo "=== AVANT COPIE ==="
-RUN ls -la /code/
-
-# Copier TOUT le contenu (nouvelle approche)
+# Copier tout le projet
 COPY . /code/
-
-# Debug : Vérifier l'état après copie
-RUN echo "=== APRES COPIE ==="
-RUN ls -la /code/
-RUN echo "=== CONTENU APP ==="
-RUN ls -la /code/app/ || echo "app/ directory not accessible"
-RUN echo "=== FICHIERS PYTHON ==="
-RUN find /code -name "*.py" | head -10
 
 # Créer le dossier logs si nécessaire
 RUN mkdir -p /code/logs

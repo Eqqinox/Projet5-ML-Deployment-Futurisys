@@ -43,6 +43,7 @@ Ce projet implémente les meilleures pratiques de **Machine Learning Operations 
 - **PostgreSQL 13+** - Base de données relationnelle
 - **SQLAlchemy 2.0+** - ORM Python
 - **Alembic 1.13+** - Migrations de base de données
+- **Schéma UML :** [database/documentation/database_schema_uml.md](database/documentation/database_schema_uml.md)
 
 ### Machine Learning
 - **XGBoost 3.0.4+** - Modèle de classification gradient boosting

@@ -67,20 +67,26 @@ jobs:
         git clone https://huggingface.co/spaces/Eqqinox/futurisys-ml-api hf-space
         cd hf-space
         
+        # NETTOYAGE: Suppression complète du contenu existant pour éviter app/app/
+        rm -rf app/ || true
+        rm -f Dockerfile hf_app.py requirements.txt README.md || true
+        
         # Copier tous les fichiers nécessaires depuis Github
         cp ../Dockerfile .
         cp ../hf_app.py .
         cp ../requirements.txt .
         cp ../README.md .
         
-        # CRITICAL: Copie complète du code source de l'API
-        cp -r ../app/ ./app/
+        # COPIE PROPRE: Copie complète du code source de l'API
+        cp -r ../app .
         
         # Vérifier que app/ est bien copié
         echo "Contenu après copie:"
         ls -la
         echo "Contenu de app/:"
         ls -la app/ || echo "app/ directory not found after copy"
+        echo "Vérification health.py:"
+        cat app/routers/health.py | head -15
         
         # Commit et push vers Hugging Face
         git add .
@@ -109,20 +115,26 @@ jobs:
         git clone https://huggingface.co/spaces/Eqqinox/futurisys-ml-api hf-space
         cd hf-space
         
+        # NETTOYAGE: Suppression complète du contenu existant pour éviter app/app/
+        rm -rf app/ || true
+        rm -f Dockerfile hf_app.py requirements.txt README.md || true
+        
         # Copier tous les fichiers nécessaires
         cp ../Dockerfile .
         cp ../hf_app.py .
         cp ../requirements.txt .
         cp ../README.md .
         
-        # CRITICAL: Copier le dossier app/ complet
-        cp -r ../app/ ./app/
+        # COPIE PROPRE: Copier le dossier app/ complet
+        cp -r ../app .
         
         # Vérifier que app/ est bien copié
         echo "Contenu après copie:"
         ls -la
         echo "Contenu de app/:"
         ls -la app/ || echo "app/ directory not found after copy"
+        echo "Vérification health.py:"
+        cat app/routers/health.py | head -15
         
         # Déploiement en production
         git add .

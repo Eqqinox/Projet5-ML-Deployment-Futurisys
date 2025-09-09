@@ -2,11 +2,9 @@
 Router pour les endpoints de santé et de monitoring
 Vérification de l'état de l'API
 """
-
 from fastapi import APIRouter
 from typing import Dict
 from datetime import datetime
-
 
 router = APIRouter()
 

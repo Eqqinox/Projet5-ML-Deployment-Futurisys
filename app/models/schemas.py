@@ -278,18 +278,6 @@ class BatchPredictionResult(BaseModel):
     average_quit_probability: float = Field(..., description="Probabilité moyenne d'attrition")
     processing_time_seconds: float = Field(..., description="Temps de traitement en secondes")
 
-class ModelInfo(BaseModel):
-    """
-    Informations sur le modèle de ML
-    """
-    model_name: str = Field(..., description="Nom du modèle")
-    model_type: str = Field(..., description="Type d'algorithme")
-    version: str = Field(..., description="Version du modèle")
-    features_count: int = Field(..., description="Nombre de features")
-    training_date: Optional[str] = Field(None, description="Date d'entraînement")
-    performance_metrics: Dict[str, float] = Field(default_factory=dict, description="Métriques de performance")
-    threshold: float = Field(..., description="Seuil de décision optimisé")
-
 # Modèles pour la gestion d'erreurs
 class ErrorResponse(BaseModel):
     """

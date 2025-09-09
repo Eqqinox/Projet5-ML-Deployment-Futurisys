@@ -8,6 +8,9 @@ WORKDIR /code
 ENV PYTHONPATH=/code
 ENV PORT=7860
 
+# Force rebuild - Sync health endpoints to single endpoint only
+ENV BUILD_TIMESTAMP=20250909_143500
+
 # Installer les dépendances système nécessaires
 RUN apt-get update && apt-get install -y \
     gcc \

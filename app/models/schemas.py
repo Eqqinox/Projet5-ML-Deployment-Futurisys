@@ -76,9 +76,9 @@ class DomaineEtude(str, Enum):
     RESSOURCES_HUMAINES = "Ressources Humaines"
 
 class FrequenceDeplacement(str, Enum):
-    VOYAGE_FREQUENT = "Voyage_Fréquent"  # Mappé vers "Frequent"
-    VOYAGE_RARE = "Voyage_Rare"          # Mappé vers "Occasionnel"
-    PAS_DE_VOYAGE = "Pas_de_Voyage"      # Mappé vers "Aucun"
+    VOYAGE_FREQUENT = "Voyage_Fréquent"
+    VOYAGE_RARE = "Voyage_Rare"
+    AUCUN = "Aucun"
 
 # Modèle d'entrée pour une prédiction unique
 class EmployeeData(BaseModel):

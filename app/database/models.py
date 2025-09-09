@@ -3,14 +3,15 @@ Modèles SQLAlchemy pour l'API Futurisys
 Réutilisation des modèles de database/python/create_db.py avec adaptations pour l'API
 """
 
+# Imports SQLAlchemy pour définition des tables et relations
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Numeric, Text, ForeignKey, func
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import UUID, JSONB, INET, ARRAY
-import uuid
-from datetime import datetime
+from sqlalchemy.ext.declarative import declarative_base   # Classe de base pour tous les modèles
+from sqlalchemy.orm import relationship                   # Définition des relations entre tables
+from sqlalchemy.dialects.postgresql import UUID, JSONB, INET, ARRAY # Types spécifiques PostgreSQL
+import uuid   # Génération d'identifiants uniques
+from datetime import datetime   # Gestion des dates/heures
 
-Base = declarative_base()
+Base = declarative_base()     # Classe de base héritée par tous les modèles
 
 class Employee(Base):
     """
@@ -18,68 +19,68 @@ class Employee(Base):
     """
     __tablename__ = 'employees'
     
-    # Clé primaire
+    # Clé primaire auto-incrémentée
     employee_id = Column(Integer, primary_key=True, autoincrement=True)
     
-    # Variables de satisfaction (1-4)
+    # Variables de satisfaction (échelle 1-4 du Projet 4)
     satisfaction_employee_environnement = Column(Integer, nullable=False)
     satisfaction_employee_nature_travail = Column(Integer, nullable=False)
     satisfaction_employee_equipe = Column(Integer, nullable=False)
     satisfaction_employee_equilibre_pro_perso = Column(Integer, nullable=False)
     
-    # Variables d'évaluation (1-4)
+    # Variables d'évaluation (échelle 1-4 du Projet 4)
     note_evaluation_precedente = Column(Integer, nullable=False)
     note_evaluation_actuelle = Column(Integer, nullable=False)
     
     # Variables hiérarchiques
     niveau_hierarchique_poste = Column(Integer, nullable=False)
     
-    # Variables binaires
-    heure_supplementaires = Column(String(5), nullable=False)
+    # Variables binaires (encodées en string pour cohérence avec dataset)
+    heure_supplementaires = Column(String(5), nullable=False)   # "Oui" ou "Non"
     
-    # Variable d'augmentation
-    augementation_salaire_precedente = Column(Numeric(6,4), nullable=False)
+    # Variable d'augmentation (pourcentage décimal)
+    augementation_salaire_precedente = Column(Numeric(6,4), nullable=False) # Ex: 0.15 pour 15%
     
     # Variables démographiques
-    age = Column(Integer, nullable=False)
-    genre = Column(String(5), nullable=False)
-    revenu_mensuel = Column(Integer, nullable=False)
-    statut_marital = Column(String(20), nullable=False)
+    age = Column(Integer, nullable=False)               # Âge en années
+    genre = Column(String(5), nullable=False)           # "Homme" ou "Femme"
+    revenu_mensuel = Column(Integer, nullable=False)    # Salaire mensuel en euros
+    statut_marital = Column(String(20), nullable=False) # "Célibataire", "Marié(e)", etc.
     
     # Variables organisationnelles
-    departement = Column(String(30), nullable=False)
-    poste = Column(String(50), nullable=False)
+    departement = Column(String(30), nullable=False)    # "Commercial", "Consulting", etc.
+    poste = Column(String(50), nullable=False)          # "Manager", "Consultant", etc.
     
-    # Variables d'expérience
-    nombre_experiences_precedentes = Column(Integer, nullable=False)
-    annee_experience_totale = Column(Integer, nullable=False)
-    annees_dans_l_entreprise = Column(Integer, nullable=False)
-    annees_dans_le_poste_actuel = Column(Integer, nullable=False)
-    annees_depuis_la_derniere_promotion = Column(Integer, nullable=False)
-    annes_sous_responsable_actuel = Column(Integer, nullable=False)
+    # Variables d'expérience professionnelle
+    nombre_experiences_precedentes = Column(Integer, nullable=False)    # Nb d'emplois précédents
+    annee_experience_totale = Column(Integer, nullable=False)           # Total années d'expérience
+    annees_dans_l_entreprise = Column(Integer, nullable=False)          # Ancienneté entreprise actuelle
+    annees_dans_le_poste_actuel = Column(Integer, nullable=False)       # Ancienneté poste actuel
+    annees_depuis_la_derniere_promotion = Column(Integer, nullable=False) # Dernière promotion
+    annes_sous_responsable_actuel = Column(Integer, nullable=False)     # Temps avec manager actuel
     
     # Variables de formation
-    nombre_participation_pee = Column(Integer, nullable=False)
-    nb_formations_suivies = Column(Integer, nullable=False)
+    nombre_participation_pee = Column(Integer, nullable=False)  # Participations plan épargne (0-3)
+    nb_formations_suivies = Column(Integer, nullable=False)     # Nombre de formations (0-6)
     
     # Variables géographiques
-    distance_domicile_travail = Column(Integer, nullable=False)
+    distance_domicile_travail = Column(Integer, nullable=False) # Distance en km
     
     # Variables d'éducation
-    niveau_education = Column(Integer, nullable=False)
-    domaine_etude = Column(String(50), nullable=False)
+    niveau_education = Column(Integer, nullable=False)          # Niveau études (1-5)
+    domaine_etude = Column(String(50), nullable=False)          # "Marketing", "Informatique", etc.
     
     # Fréquence de déplacement
-    frequence_deplacement = Column(String(20), nullable=False)
+    frequence_deplacement = Column(String(20), nullable=False)  # "Occasionnel", etc.
     
-    # Variable cible
-    a_quitte_l_entreprise = Column(String(5), nullable=False)
+    # Variable cible du modèle ML
+    a_quitte_l_entreprise = Column(String(5), nullable=False)   # "Oui" ou "Non"
     
     # Métadonnées
-    created_at = Column(DateTime, default=func.current_timestamp())
-    updated_at = Column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
+    created_at = Column(DateTime, default=func.current_timestamp()) # Date création enregistrement
+    updated_at = Column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())  # Date dernière modification
     
-    # Relations
+    # Relation vers les requêtes de prédiction (1:N)
     prediction_requests = relationship("PredictionRequest", back_populates="employee")
     
     def to_dict(self):
@@ -94,7 +95,7 @@ class Employee(Base):
             "note_evaluation_actuelle": self.note_evaluation_actuelle,
             "niveau_hierarchique_poste": self.niveau_hierarchique_poste,
             "heure_supplementaires": self.heure_supplementaires,
-            "augementation_salaire_precedente": float(self.augementation_salaire_precedente),
+            "augementation_salaire_precedente": float(self.augementation_salaire_precedente), # Conversion Decimal->float
             "age": self.age,
             "genre": self.genre,
             "revenu_mensuel": self.revenu_mensuel,
@@ -119,26 +120,29 @@ class Employee(Base):
         }
 
 class PredictionSession(Base):
-    """Sessions de prédiction (single/batch)"""
+    """
+    Sessions de prédiction (single/batch)
+    Groupe logique de requêtes ML pour traçabilité
+    """
     __tablename__ = 'prediction_sessions'
     
     session_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     session_type = Column(String(10), nullable=False)
-    total_predictions = Column(Integer, default=0)
-    status = Column(String(20), nullable=False, default='pending')
+    total_predictions = Column(Integer, default=0)      # Nombre de prédictions dans la session
+    status = Column(String(20), nullable=False, default='pending')  # "pending", "completed", "failed"
     started_at = Column(DateTime, default=func.current_timestamp())
     completed_at = Column(DateTime)
     error_message = Column(Text)
-    session_metadata = Column(JSONB)
+    session_metadata = Column(JSONB)    # Métadonnées JSON libres
     
     # Relations
-    prediction_requests = relationship("PredictionRequest", back_populates="session", cascade="all, delete-orphan")
-    audit_logs = relationship("APIAuditLog", back_populates="session")
+    prediction_requests = relationship("PredictionRequest", back_populates="session", cascade="all, delete-orphan")   # 1:N vers requêtes
+    audit_logs = relationship("APIAuditLog", back_populates="session")  # 1:N vers requêtes
     
     def to_dict(self):
-        """Convertit la session en dictionnaire pour l'API"""
+        """Convertit la session en dictionnaire pour l'API (Sérialisation JSON pour API)"""
         return {
-            "session_id": str(self.session_id),
+            "session_id": str(self.session_id),   # UUID -> string
             "session_type": self.session_type,
             "total_predictions": self.total_predictions,
             "status": self.status,
@@ -149,17 +153,20 @@ class PredictionSession(Base):
         }
 
 class PredictionRequest(Base):
-    """Inputs du modèle ML"""
+    """
+    Inputs du modèle ML - Traçabilité des données d'entrée
+    Chaque employé prédit génère une requête
+    """
     __tablename__ = 'prediction_requests'
     
-    request_id = Column(Integer, primary_key=True, autoincrement=True)
-    session_id = Column(UUID(as_uuid=True), ForeignKey('prediction_sessions.session_id', ondelete='CASCADE'), nullable=False)
-    employee_id = Column(Integer, ForeignKey('employees.employee_id', ondelete='SET NULL'))
-    input_data = Column(JSONB, nullable=False)
-    request_source = Column(String(20), nullable=False, default='api')
-    created_at = Column(DateTime, default=func.current_timestamp())
+    request_id = Column(Integer, primary_key=True, autoincrement=True)    # ID unique auto-incrémenté
+    session_id = Column(UUID(as_uuid=True), ForeignKey('prediction_sessions.session_id', ondelete='CASCADE'), nullable=False)   # Lien vers session (CASCADE delete)
+    employee_id = Column(Integer, ForeignKey('employees.employee_id', ondelete='SET NULL')) # Lien vers employé (optionnel)
+    input_data = Column(JSONB, nullable=False)    # Données JSON complètes envoyées au modèle
+    request_source = Column(String(20), nullable=False, default='api')  # Source: "api", "batch", "test"
+    created_at = Column(DateTime, default=func.current_timestamp()) # Timestamp de création
     
-    # Relations
+    # Relations bidirectionnelles
     session = relationship("PredictionSession", back_populates="prediction_requests")
     employee = relationship("Employee", back_populates="prediction_requests")
     result = relationship("PredictionResult", back_populates="request", uselist=False, cascade="all, delete-orphan")
@@ -170,27 +177,30 @@ class PredictionRequest(Base):
             "request_id": self.request_id,
             "session_id": str(self.session_id),
             "employee_id": self.employee_id,
-            "input_data": self.input_data,
+            "input_data": self.input_data,    # JSONB se sérialise automatiquement
             "request_source": self.request_source,
             "created_at": self.created_at.isoformat() if self.created_at else None
         }
 
 class PredictionResult(Base):
-    """Outputs du modèle ML"""
+    """
+    Outputs du modèle ML - Traçabilité des résultats de prédiction
+    Stocke toutes les informations retournées par le modèle XGBoost
+    """
     __tablename__ = 'prediction_results'
     
     result_id = Column(Integer, primary_key=True, autoincrement=True)
-    request_id = Column(Integer, ForeignKey('prediction_requests.request_id', ondelete='CASCADE'), nullable=False)
-    prediction = Column(String(5), nullable=False)
-    probability_quit = Column(Numeric(6,4), nullable=False)
-    probability_stay = Column(Numeric(6,4), nullable=False)
-    confidence_level = Column(String(10), nullable=False)
-    risk_factors = Column(ARRAY(Text))
-    model_version = Column(String(20), nullable=False)
-    processing_time_ms = Column(Numeric(10,2))
-    created_at = Column(DateTime, default=func.current_timestamp())
+    request_id = Column(Integer, ForeignKey('prediction_requests.request_id', ondelete='CASCADE'), nullable=False)  # Lien vers requête (CASCADE)
+    prediction = Column(String(5), nullable=False)          # "Oui" ou "Non" (attrition)
+    probability_quit = Column(Numeric(6,4), nullable=False) # Probabilité de départ (0-1)
+    probability_stay = Column(Numeric(6,4), nullable=False) # Probabilité de rester (0-1)
+    confidence_level = Column(String(10), nullable=False)   # "Faible", "Moyen", "Élevé"
+    risk_factors = Column(ARRAY(Text))  # Liste des facteurs de risque identifiés
+    model_version = Column(String(20), nullable=False)      # Version du modèle utilisé
+    processing_time_ms = Column(Numeric(10,2))              # Temps de traitement en millisec
+    created_at = Column(DateTime, default=func.current_timestamp()) # Timestamp du résultat
     
-    # Relations
+    # Relations vers la requête
     request = relationship("PredictionRequest", back_populates="result")
     
     def to_dict(self):
@@ -209,7 +219,10 @@ class PredictionResult(Base):
         }
 
 class ModelMetadata(Base):
-    """Métadonnées et versioning des modèles ML"""
+    """
+    Métadonnées et versioning des modèles ML
+    Garde la trace de tous les modèles déployés et leurs performances
+    """
     __tablename__ = 'model_metadata'
     
     model_id = Column(Integer, primary_key=True, autoincrement=True)
@@ -241,27 +254,30 @@ class ModelMetadata(Base):
         }
 
 class APIAuditLog(Base):
-    """Audit complet des appels API"""
+    """
+    Audit complet des appels API
+    Traçabilité sécuritaire et monitoring des performances
+    """
     __tablename__ = 'api_audit_logs'
     
     log_id = Column(Integer, primary_key=True, autoincrement=True)
     session_id = Column(UUID(as_uuid=True), ForeignKey('prediction_sessions.session_id', ondelete='SET NULL'))
-    endpoint_called = Column(String(100), nullable=False)
-    http_method = Column(String(10), nullable=False)
-    client_ip = Column(INET)
-    user_agent = Column(Text)
-    request_headers = Column(JSONB)
-    request_payload = Column(JSONB)
-    response_status_code = Column(Integer, nullable=False)
-    response_payload = Column(JSONB)
-    response_time_ms = Column(Numeric(10,2))
-    created_at = Column(DateTime, default=func.current_timestamp())
+    endpoint_called = Column(String(100), nullable=False)   # URL endpoint appelé
+    http_method = Column(String(10), nullable=False)        # GET, POST, PUT, DELETE
+    client_ip = Column(INET)                            # Adresse IP client (type PostgreSQL INET)
+    user_agent = Column(Text)                           # User-Agent du navigateur/client
+    request_headers = Column(JSONB)                         # Headers HTTP complets
+    request_payload = Column(JSONB)                         # Body de la requête JSON
+    response_status_code = Column(Integer, nullable=False)  # Code réponse HTTP (200, 404, etc.)
+    response_payload = Column(JSONB)                        # Body de la réponse JSON
+    response_time_ms = Column(Numeric(10,2))                # Temps de réponse en millisecondes
+    created_at = Column(DateTime, default=func.current_timestamp()) # Timestamp de l'appel
     
-    # Relations
+    # Relation vers session (optionnelle)
     session = relationship("PredictionSession", back_populates="audit_logs")
     
     def to_dict(self):
-        """Convertit le log d'audit en dictionnaire pour l'API"""
+        """Convertit le log d'audit en dictionnaire pour l'API (Sérialisation JSON pour API)"""
         return {
             "log_id": self.log_id,
             "session_id": str(self.session_id) if self.session_id else None,

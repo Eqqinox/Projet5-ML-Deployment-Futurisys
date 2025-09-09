@@ -84,6 +84,8 @@ app = FastAPI(
     license_info={
         "name": "MIT License",
     },
+    openapi_url="/openapi.json", # Force la régénération
+    docs_url="/docs",            # Force la régénération
     lifespan=lifespan
 )
 

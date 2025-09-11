@@ -66,20 +66,25 @@ L'**API Futurisys ML** est une solution de classification automatique développ�
 ## **Architecture**
 
 ### Vue d'ensemble
-```mermaid
-    Client[Client HTTP] --> API[FastAPI Application]
-    API --> ML[XGBoost Model]
-    API --> DB[(PostgreSQL)]
-    API --> Logger[Middleware Logger]
-    
-    ML --> Preprocessor[Preprocessing Pipeline]
-    Preprocessor --> OneHot[OneHot Encoder]
-    Preprocessor --> Ordinal[Ordinal Encoder]
-    
-    Logger --> Audit[Audit Trail]
-    DB --> Sessions[Prediction Sessions]
-    DB --> History[Prediction History]
-```
+**Architecture en couches :**
+
+**<u>Couche Présentation :</u>**
+- Client HTTP → FastAPI Application
+
+**<u>Couche Logique Métier :</u>**
+- FastAPI → XGBoost Model
+- FastAPI → Middleware Logger  
+- FastAPI → PostgreSQL Database
+
+**<u>Couche Data Processing :</u>**
+- XGBoost Model → Preprocessing Pipeline
+  - OneHot Encoder (variables catégorielles)
+  - Ordinal Encoder (fréquence déplacement)
+
+**<u>Couche Persistance :</u>**
+- PostgreSQL → Prediction Sessions
+- PostgreSQL → Prediction History
+- Middleware Logger → Audit Trail
 
 ### Stack technique
 

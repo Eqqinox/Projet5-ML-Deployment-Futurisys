@@ -5,6 +5,7 @@ Endpoints pour prédictions individuelles avec validation
 
 from fastapi import APIRouter, Depends, HTTPException
 import logging
+import time
 from datetime import datetime
 
 from app.models.schemas import (
@@ -80,6 +81,7 @@ async def predict_batch_employees(
     - **batch_data**: Liste d'employés (maximum 100)
     - **return**: Résultats de prédictions avec statistiques
     """
+    start_time = time.time()
     try:
         logger.info(f"Prédiction batch pour {len(batch_data.employees)} employés")
         
@@ -100,6 +102,10 @@ async def predict_batch_employees(
             prediction = ml_model.predict_single(employee)
             predictions.append(prediction)
         
+        # Calcul du temps de traitement total
+        end_time = time.time()
+        processing_time = end_time - start_time
+        
         # Statistiques
         quit_count = len([p for p in predictions if p.prediction == "Oui"])
         stay_count = len([p for p in predictions if p.prediction == "Non"])
@@ -110,7 +116,8 @@ async def predict_batch_employees(
             total_employees=len(predictions),
             quit_predictions=quit_count,
             stay_predictions=stay_count,
-            average_quit_probability=round(avg_quit_prob, 4)
+            average_quit_probability=round(avg_quit_prob, 4),
+            processing_time_seconds=round(processing_time, 3)
         )
         
     except Exception as e:

@@ -17,7 +17,7 @@ class Settings(BaseSettings):       #centralise toute la configuration de l'app
     API_HOST: str = "0.0.0.0"               #adresse d’écoute du serveur (0.0.0.0 = toutes les interfaces)
     API_PORT: int = 8000                    #port TCP d’écoute
     DEBUG: bool = True                      #active le mode debug de FastAPI
-    SECRET_KEY: str = "votre-clé-secrète-très-longue-et-complexe-12345" # A CHANGER
+    SECRET_KEY: str = "clé-secrète" # A CHANGER
     
     # Configuration Base de données - Variables d'environnement (.env) - PRIORITÉ HAUTE
     # Les variables documentent quelles configurations sont attendues, même si les valeurs viennent du .env.

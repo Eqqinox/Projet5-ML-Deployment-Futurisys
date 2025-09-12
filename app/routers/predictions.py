@@ -30,7 +30,28 @@ def get_ml_model() -> MLModel:
     return app.state.ml_model
 
 
-@router.post("/predict/single", response_model=PredictionResult)
+@router.post(
+    "/predict/single", 
+    response_model=PredictionResult,
+    summary="Prédiction d'attrition individuelle",
+    description="""
+    Analyse du risque de départ d'un employé avec le modèle XGBoost.
+    
+    Fournit une prédiction binaire (Oui/Non) avec probabilités détaillées
+    et facteurs de risque identifiés.
+    """,
+    responses={
+        200: {
+            "description": "Prédiction réalisée avec succès"
+        },
+        422: {
+            "description": "Données d'entrée invalides"
+        },
+        503: {
+            "description": "Modèle ML non disponible"
+        }
+    }
+)
 async def predict_single_employee(
     employee: EmployeeData,
     ml_model: MLModel = Depends(get_ml_model)
@@ -70,7 +91,30 @@ async def predict_single_employee(
             }
         )
 
-@router.post("/predict/batch", response_model=BatchPredictionResult)
+@router.post(
+    "/predict/batch", 
+    response_model=BatchPredictionResult,
+    summary="Prédictions d'attrition par lots",
+    description="""
+    Traitement simultané de plusieurs employés (maximum 100).
+    
+    Optimisé pour l'analyse de masse avec statistiques automatiques :
+    - Répartition des prédictions (Oui/Non)
+    - Probabilité moyenne de départ
+    - Temps de traitement global
+    """,
+    responses={
+        200: {
+            "description": "Prédictions batch réalisées avec succès"
+        },
+        400: {
+            "description": "Batch trop volumineux (>100 employés)"
+        },
+        503: {
+            "description": "Modèle ML non disponible"
+        }
+    }
+)
 async def predict_batch_employees(
     batch_data: BatchEmployeeData,
     ml_model: MLModel = Depends(get_ml_model)
@@ -124,7 +168,25 @@ async def predict_batch_employees(
         logger.error(f"Erreur prédiction batch: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/predict/validate-input", response_model=dict)
+@router.post(
+    "/predict/validate-input", 
+    response_model=dict,
+    summary="Validation des données d'entrée",
+    description="""
+    Vérifie la conformité des données employé sans effectuer de prédiction.
+    
+    Utile pour tester la structure et les valeurs des données avant 
+    l'envoi vers les endpoints de prédiction.
+    """,
+    responses={
+        200: {
+            "description": "Données validées avec succès"
+        },
+        422: {
+            "description": "Données non conformes aux spécifications"
+        }
+    }
+)
 async def validate_employee_input(employee: EmployeeData):
     """
     Validation des données d'entrée sans effectuer de prédiction
@@ -151,7 +213,23 @@ async def validate_employee_input(employee: EmployeeData):
             }
         )
 
-@router.get("/predict/supported-values")
+@router.get(
+    "/predict/supported-values",
+    summary="Valeurs acceptées par le modèle",
+    description="""
+    Documentation complète des valeurs et plages acceptées par le modèle XGBoost.
+    
+    Référence technique pour les développeurs intégrant l'API :
+    - Variables catégorielles avec valeurs exactes
+    - Plages numériques autorisées
+    - Métadonnées du modèle
+    """,
+    responses={
+        200: {
+            "description": "Spécifications du modèle récupérées"
+        }
+    }
+)
 async def get_supported_categorical_values():
     """
     Liste des valeurs supportées pour les variables catégorielles

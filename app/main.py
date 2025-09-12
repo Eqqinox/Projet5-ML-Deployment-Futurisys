@@ -1,6 +1,6 @@
 """
-FastAPI Application principale - Projet Futurisys  
-API de prédiction d'attrition des employés avec modèle XGBoost
+API FastAPI pour la prédiction d'attrition des employés - Futurisys
+Version enrichie avec documentation OpenAPI complète
 """
 
 from fastapi import FastAPI, HTTPException
@@ -56,26 +56,63 @@ async def lifespan(app: FastAPI):
     app.state.ml_model = None
     logger.info("✅ Nettoyage terminé")
 
+# Métadonnées pour organiser la documentation
+tags_metadata = [
+    {
+        "name": "Health",
+        "description": "Endpoints de monitoring et santé de l'API"
+    },
+    {
+        "name": "Predictions", 
+        "description": "Prédictions ML avec le modèle XGBoost"
+    },
+    {
+        "name": "Data",
+        "description": "Gestion des données PostgreSQL"
+    },
+    {
+        "name": "Analytics",
+        "description": "Statistiques et rapports"
+    },
+    {
+        "name": "Info",
+        "description": "Informations système"
+    }
+]
+
+
 # Configuration FastAPI
 app = FastAPI(
     title="Futurisys ML API - Prédiction d'Attrition",
     description="""
-    API de Machine Learning pour prédire l'attrition des employés.
+    API de Machine Learning pour prédire l'attrition des employés développée pour **Futurisys**.
 
-    ## Fonctionnalités
+    ## 🎯 Fonctionnalités
 
-    * **Prédictions individuelles** : Prédire si un employé va quitter l'entreprise
-    * **Validation des données** : Vérifier la conformité des données d'entrée  
-    * **Documentation des valeurs** : Consulter les valeurs acceptées
-    * **Monitoring** : Vérifier l'état de santé de l'API et du modèle
+    * **Prédictions individuelles** : Analyser un employé spécifique
+    * **Prédictions par lots** : Traiter jusqu'à 100 employés simultanément
+    * **Validation des données** : Vérifier la conformité avant prédiction  
+    * **Monitoring complet** : État de santé de l'API et du modèle
+    * **Traçabilité** : Historique complet avec audit trail
 
-    ## Modèle
+    ## 🧠 Modèle XGBoost
 
-    * **Algorithme** : XGBoost Classifier (v1.0.0)
-    * **Variable cible** : a_quitte_l_entreprise (Oui/Non)  
-    * **Features** : 27 variables d'entrée
+    * **Version** : 1.0.0 (issu du Projet 4)
+    * **Variables** : 27 features employé 
     * **Seuil optimal** : 0.514
+    * **Performances** : Accuracy 85.88%, F1-Score 56.56%
+
+    ## 📊 Architecture
+
+    * **Backend** : FastAPI + PostgreSQL + Docker
+    * **CI/CD** : GitHub Actions → Hugging Face Spaces
+    * **Tests** : 85 tests automatisés (52% couverture)
+
+    ---
+    **Projet** : Formation Expert Data Science OpenClassrooms  
+    **Développeur** : MMeknaci
     """,
+    
     version="1.0.0",
     contact={
         "name": "Futurisys ML Team",
@@ -84,6 +121,7 @@ app = FastAPI(
     license_info={
         "name": "MIT License",
     },
+    openapi_tags=tags_metadata,
     openapi_url="/openapi.json", # Force la régénération
     docs_url="/docs",            # Force la régénération
     lifespan=lifespan
@@ -110,32 +148,89 @@ async def root():
     """Redirection vers la documentation"""
     return RedirectResponse(url="/docs")
 
-@app.get("/info", tags=["Info"])
+@app.get(
+    "/info", 
+    tags=["Info"],
+    summary="Informations système et état de l'API",
+    description="""
+    Retourne les métadonnées complètes sur l'API Futurisys ML :
+    
+    - **État du modèle** : Vérification du chargement XGBoost
+    - **Configuration** : Environnement et version déployée
+    - **Endpoints** : Liste des fonctionnalités disponibles
+    - **Monitoring** : Indicateurs de santé pour supervision
+    
+    Utilisé pour la validation de déploiement et le monitoring automatique.
+    """,
+    responses={
+        200: {
+            "description": "Informations récupérées avec succès",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "project": "Projet5 ML Deployment",
+                        "client": "Futurisys", 
+                        "model_type": "XGBoost Classifier",
+                        "version": "1.0.0",
+                        "environment": "production",
+                        "model_status": "✅ Modèle chargé et opérationnel",
+                        "endpoints_available": [
+                            "GET /health/ - Santé de l'API",
+                            "POST /api/v1/predict/single - Prédiction individuelle"
+                        ]
+                    }
+                }
+            }
+        },
+        500: {
+            "description": "Erreur interne",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Erreur système interne"}
+                }
+            }
+        }
+    }
+)
 async def get_api_info():
     """Informations générales sur l'API"""
     
-    api_info = {
-        "project": "Projet5 ML Deployment",
-        "client": "Futurisys",
-        "model_type": "XGBoost Classifier",
-        "version": "1.0.0",
-        "environment": settings.ENVIRONMENT,
-        "endpoints_available": [
-            "GET /health/ - Santé de l'API",
-            "POST /api/v1/predict/single - Prédiction individuelle", 
-            "POST /api/v1/predict/validate-input - Validation des données",
-            "GET /api/v1/predict/supported-values - Valeurs acceptées",
-            "GET /docs - Documentation Swagger"
-        ]
-    }
-    
-    # Vérifier si le modèle est chargé
-    if hasattr(app.state, 'ml_model') and app.state.ml_model is not None:
-        api_info["model_status"] = "✅ Modèle chargé et opérationnel"
-    else:
-        api_info["model_status"] = "❌ Modèle non disponible"
-    
-    return api_info
+    try:
+        api_info = {
+            "project": "Projet5 ML Deployment",
+            "client": "Futurisys",
+            "model_type": "XGBoost Classifier",
+            "version": "1.0.0",
+            "environment": settings.ENVIRONMENT,
+            "endpoints_available": [
+                "GET /health/ - Santé de l'API",
+                "POST /api/v1/predict/single - Prédiction individuelle", 
+                "POST /api/v1/predict/batch - Prédictions par lots",
+                "POST /api/v1/predict/validate-input - Validation des données",
+                "GET /api/v1/predict/supported-values - Valeurs acceptées",
+                "GET /docs - Documentation Swagger"
+            ]
+        }
+        
+        # Vérification enrichie du modèle ML
+        if hasattr(app.state, 'ml_model') and app.state.ml_model is not None:
+            if app.state.ml_model.is_loaded:
+                api_info["model_status"] = "✅ Modèle chargé et opérationnel"
+                api_info["model_threshold"] = app.state.ml_model.threshold
+                api_info["model_features"] = len(app.state.ml_model.final_column_names) if app.state.ml_model.final_column_names else "Unknown"
+            else:
+                api_info["model_status"] = "⚠️ Modèle présent mais non initialisé"
+        else:
+            api_info["model_status"] = "❌ Modèle non disponible"
+        
+        return api_info
+        
+    except Exception as e:
+        logger.error(f"Erreur lors de la récupération des informations: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Erreur lors de la récupération des informations système"
+        )
 
 # Routers pour PostgreSQL
 try:

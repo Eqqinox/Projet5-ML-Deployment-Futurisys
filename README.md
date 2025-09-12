@@ -12,7 +12,7 @@ pinned: false
 
 **Déploiement d'un modèle XGBoost de prédiction d'attrition avec FastAPI, PostgreSQL et CI/CD**
 
-[![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://python.org)
+[![Python 3.11.3](https://img.shields.io/badge/Python-3.11.3-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com)
 [![XGBoost](https://img.shields.io/badge/XGBoost-3.0.4+-orange.svg)](https://xgboost.readthedocs.io)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-blue.svg)](https://postgresql.org)
@@ -21,16 +21,17 @@ pinned: false
 
 ## **Table des matières**
 
-- [ À propos du projet](#-à-propos-du-projet)
-- [ Architecture](#️-architecture)
-- [ Démarrage rapide](#-démarrage-rapide)
-- [ Installation détaillée](#️-installation-détaillée)
-- [ Utilisation de l'API](#-utilisation-de-lapi)
-- [ Tests et qualité](#-tests-et-qualité)
-- [ Déploiement](#-déploiement)
-- [ Configuration avancée](#-configuration-avancée)
-- [ Contribution](#-contribution)
-- [ Licence](#-licence)
+- [ À propos du projet](#à-propos-du-projet)
+- [ Architecture](#architecture)
+- [ Démarrage rapide](#démarrage-rapide)
+- [ Installation détaillée](#installation-détaillée)
+- [ Utilisation de l'API](#utilisation-de-lapi)
+- [ Tests et qualité](#tests-et-qualité)
+- [ Environnements de déploiement](#environnements-de-déploiement)
+- [ Déploiement](#déploiement)
+- [ Configuration avancée](#configuration-avancée)
+- [ Métriques du modèle ML](#métriques-du-modèle-ml)
+- [ Support et contact](#support-et-contact)
 
 ## **À propos du projet**
 
@@ -596,6 +597,19 @@ pytest tests/test_integration.py -v -m integration
 
 Après exécution des tests, le rapport HTML est disponible dans `htmlcov/index.html`.
 
+## **Environnements de déploiement**
+
+### Développement local
+- **URL** : http://localhost:8000
+- **Base** : PostgreSQL locale (optionnelle)
+- **Démarrage** : `uvicorn app.main:app --reload`
+
+**### Production (Hugging Face Spaces)**
+- **URL** : https://huggingface.co/spaces/Eqqinox/futurisys-ml-api
+- **Déploiement** : Automatique via GitHub Actions
+- **Branches** : `develop` (dev) et `main` (production)
+- **Monitoring** : Endpoints `/health` intégrés
+
 ## **Déploiement**
 
 ### Hugging Face Spaces (Multi-environnements)
@@ -723,19 +737,6 @@ python database/create_db.py
 uvicorn app.main:app --reload
 ```
 
-## **Support et contact**
-
-- **Auteur :** MMeknaci (mounir.meknaci@gmail.com)
-- **Projet :** Formation Data Scientist Machine Learning - OpenClassrooms
-- **Repository :** [GitHub](https://github.com/Eqqinox/projet5-ml-deployment)
-- **Démo live :** [Hugging Face Spaces](https://huggingface.co/spaces/Eqqinox/futurisys-ml-api)
-
-### Remerciements
-
-- **OpenClassrooms** pour le parcours Data Science complet et le contexte métier et les spécifications
-- **Communauté open source** : FastAPI, XGBoost, PostgreSQL
-- **Hugging Face** pour la plateforme de déploiement gratuite
-
 ---
 
 ## **Métriques du modèle ML**
@@ -753,18 +754,18 @@ uvicorn app.main:app --reload
 
 ---
 
-**## Environnements de déploiement**
+## **Support et contact**
 
-**### Développement local**
-- **URL** : http://localhost:8000
-- **Base** : PostgreSQL locale (optionnelle)
-- **Démarrage** : `uvicorn app.main:app --reload`
+- **Auteur :** MMeknaci (mounir.meknaci@gmail.com)
+- **Projet :** Formation Data Scientist Machine Learning - OpenClassrooms
+- **Repository :** [GitHub](https://github.com/Eqqinox/Projet5-ML-Deployment-Futurisys)
+- **Démo live :** [Hugging Face Spaces](https://huggingface.co/spaces/Eqqinox/futurisys-ml-api)
 
-**### Production (Hugging Face Spaces)**
-- **URL** : https://huggingface.co/spaces/Eqqinox/futurisys-ml-api
-- **Déploiement** : Automatique via GitHub Actions
-- **Branches** : `develop` (dev) et `main` (production)
-- **Monitoring** : Endpoints `/health` intégrés
+### Remerciements
+
+- **OpenClassrooms** pour le parcours Data Science complet et le contexte métier et les spécifications
+- **Communauté open source** : FastAPI, XGBoost, PostgreSQL
+- **Hugging Face** pour la plateforme de déploiement gratuite
 
 ---
 *Dernière mise à jour : Septembre 2025*

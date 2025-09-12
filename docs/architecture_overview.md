@@ -49,7 +49,6 @@ sequenceDiagram
     participant PostgreSQL
     
     Client->>FastAPI: POST /api/v1/predict/single
-                  ou: POST /api/v1/predict/batch
     Note over Client,FastAPI: Données employé (27 variables)
     
     FastAPI->>Middleware: PredictionLoggerMiddleware
@@ -74,6 +73,8 @@ sequenceDiagram
     FastAPI->>Client: Réponse JSON complète
     Note over Client,FastAPI: Prédiction + probabilités + explicabilité
 ```
+
+**Note :** Ce diagramme illustre le flow pour `/predict/single`. Le processus est identique pour `/predict/batch` avec traitement en boucle des employés.
 
 ### Ordre de traitement des données ML
 

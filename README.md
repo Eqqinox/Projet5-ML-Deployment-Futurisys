@@ -67,25 +67,68 @@ L'**API Futurisys ML** est une solution de classification automatique développ�
 ## **Architecture**
 
 ### Vue d'ensemble
-**Architecture en couches :**
 
-**<u>Couche Présentation :</u>**
-- Client HTTP → FastAPI Application
-
-**<u>Couche Logique Métier :</u>**
-- FastAPI → XGBoost Model
-- FastAPI → Middleware Logger  
-- FastAPI → PostgreSQL Database
-
-**<u>Couche Data Processing :</u>**
-- XGBoost Model → Preprocessing Pipeline
-  - OneHot Encoder (variables catégorielles)
-  - Ordinal Encoder (fréquence déplacement)
-
-**<u>Couche Persistance :</u>**
-- PostgreSQL → Prediction Sessions
-- PostgreSQL → Prediction History
-- Middleware Logger → Audit Trail
+```mermaid
+graph TB
+    subgraph "🌐 Couche Présentation"
+        Client[Client HTTP]
+        FastAPI[FastAPI Application]
+    end
+    
+    subgraph "⚙️ Couche Logique Métier"
+        XGBoost[XGBoost Model]
+        Middleware[Middleware Logger]
+        API_Logic[FastAPI Core]
+    end
+    
+    subgraph "🔄 Couche Data Processing"
+        Pipeline[Preprocessing Pipeline]
+        OneHot[OneHot Encoder<br/>Variables catégorielles]
+        Ordinal[Ordinal Encoder<br/>Fréquence déplacement]
+    end
+    
+    subgraph "💾 Couche Persistance"
+        PostgreSQL[(PostgreSQL Database)]
+        Sessions[Prediction Sessions]
+        History[Prediction History]
+        Audit[Audit Trail]
+    end
+    
+    %% Flux principal
+    Client -->|HTTP Request| FastAPI
+    FastAPI --> API_Logic
+    
+    %% Logique métier
+    API_Logic --> XGBoost
+    API_Logic --> Middleware
+    API_Logic --> PostgreSQL
+    
+    %% Data processing
+    XGBoost --> Pipeline
+    Pipeline --> OneHot
+    Pipeline --> Ordinal
+    
+    %% Persistance
+    PostgreSQL --> Sessions
+    PostgreSQL --> History
+    Middleware --> Audit
+    
+    %% Réponses
+    XGBoost -->|Prediction Result| API_Logic
+    API_Logic -->|JSON Response| FastAPI
+    FastAPI -->|HTTP Response| Client
+    
+    %% Styles
+    classDef presentation fill:#e1f5fe
+    classDef business fill:#f3e5f5
+    classDef processing fill:#fff3e0
+    classDef persistence fill:#e8f5e8
+    
+    class Client,FastAPI presentation
+    class XGBoost,Middleware,API_Logic business
+    class Pipeline,OneHot,Ordinal processing
+    class PostgreSQL,Sessions,History,Audit persistence
+```
 
 ### Stack technique
 

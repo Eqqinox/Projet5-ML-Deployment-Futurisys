@@ -7,33 +7,33 @@ erDiagram
     employees {
         int employee_id PK
         int satisfaction_employee_environnement "1-4"
-        int note_evaluation_precedente "1-4" 
-        int niveau_hierarchique_poste "1-5"
         int satisfaction_employee_nature_travail "1-4"
         int satisfaction_employee_equipe "1-4"
         int satisfaction_employee_equilibre_pro_perso "1-4"
+        int note_evaluation_precedente "1-4"
         int note_evaluation_actuelle "1-4"
+        int niveau_hierarchique_poste "1-5"
         varchar heure_supplementaires "Oui/Non"
         decimal augementation_salaire_precedente
         int age "18-60"
-        varchar genre "F/M"
-        int revenu_mensuel "1009-19999"
+        varchar genre "Homme/Femme"
+        int revenu_mensuel "1000-20000"
         varchar statut_marital "Célibataire/Marié(e)/Divorcé(e)"
-        varchar departement "Commercial/Consulting/RH"
-        varchar poste "Cadre Commercial/Assistant Direction/Consultant/etc."
+        varchar departement "Commercial/Consulting/Ressources Humaines"
+        varchar poste "9 valeurs possibles"
         int nombre_experiences_precedentes
         int annee_experience_totale
         int annees_dans_l_entreprise
         int annees_dans_le_poste_actuel
-        varchar a_quitte_l_entreprise "Oui/Non"
+        int annees_depuis_la_derniere_promotion
+        int annes_sous_responsable_actuel
         int nombre_participation_pee "0-3"
         int nb_formations_suivies "0-6"
         int distance_domicile_travail "1-29"
         int niveau_education "1-5"
-        varchar domaine_etude "Infra&Cloud/Autre/Transformation/Marketing/Entrepreunariat/RH"
-        varchar frequence_deplacement "Aucun/Occasionnel/Frequent"
-        int annees_depuis_la_derniere_promotion
-        int annes_sous_responsable_actuel
+        varchar domaine_etude "6 valeurs possibles"
+        varchar frequence_deplacement "3 valeurs possibles"
+        varchar a_quitte_l_entreprise "Oui/Non"
         timestamp created_at
         timestamp updated_at
     }
@@ -46,14 +46,14 @@ erDiagram
         timestamp started_at
         timestamp completed_at
         text error_message
-        json session_metadata
+        jsonb session_metadata
     }
 
     prediction_requests {
         int request_id PK
         uuid session_id FK
         int employee_id FK "nullable"
-        jsonb input_data
+        jsonb input_data "27 variables employé"
         varchar request_source "api/batch/test"
         timestamp created_at
     }
@@ -63,10 +63,10 @@ erDiagram
         int request_id FK
         varchar prediction "Oui/Non"
         decimal probability_quit "0.0-1.0"
-        decimal probability_stay "0.0-1.0" 
+        decimal probability_stay "0.0-1.0"
         varchar confidence_level "Faible/Moyen/Élevé"
-        text[] risk_factors
-        varchar model_version
+        text[] risk_factors "Facteurs identifiés"
+        varchar model_version "1.0.0"
         decimal processing_time_ms
         timestamp created_at
     }
@@ -74,11 +74,11 @@ erDiagram
     model_metadata {
         int model_id PK
         varchar model_name
-        varchar version
+        varchar version "1.0.0"
         varchar algorithm_type "XGBoost"
-        decimal threshold_value
-        json performance_metrics
-        json feature_importance
+        decimal threshold_value "0.514"
+        jsonb performance_metrics "Accuracy, F1, etc."
+        jsonb feature_importance "Top features"
         varchar model_file_path
         boolean is_active
         timestamp created_at
@@ -86,211 +86,278 @@ erDiagram
     }
 
     api_audit_logs {
-        int log_id PK
-        uuid session_id FK
-        varchar endpoint_called
-        varchar http_method
-        varchar client_ip
-        varchar user_agent
-        json request_headers
-        json request_payload
-        int response_status_code
-        json response_payload
+        bigint log_id PK
+        uuid session_id FK "nullable"
+        varchar endpoint_called "/api/v1/predict/single"
+        varchar http_method "GET/POST"
+        inet client_ip
+        text user_agent
+        jsonb request_headers "Headers HTTP"
+        jsonb request_payload "Body requête"
+        int response_status_code "200/400/500"
+        jsonb response_payload "Body réponse"
         decimal response_time_ms
         timestamp created_at
     }
 
-    employees ||--o{ prediction_requests : "peut avoir"
+    employees ||--o{ prediction_requests : "peut_etre_predit"
     prediction_sessions ||--o{ prediction_requests : "contient"
-    prediction_requests ||--|| prediction_results : "génère"
+    prediction_requests ||--|| prediction_results : "genere"
     prediction_sessions ||--o{ api_audit_logs : "trace"
 ```
 
-## Tables détaillées
+## Architecture de données détaillée
 
-### Table `employees` (Dataset Projet 4)
-**1470 lignes, 28 colonnes (27 features + target)**
+### Flux de données principal
 
-| Colonne | Type SQL | Contraintes | Description |
-|---------|----------|-------------|-------------|
-| employee_id | SERIAL PRIMARY KEY | NOT NULL | ID unique auto-incrémenté |
-| satisfaction_employee_environnement | INTEGER | CHECK (value BETWEEN 1 AND 4) NOT NULL | Satisfaction environnement |
-| note_evaluation_precedente | INTEGER | CHECK (value BETWEEN 1 AND 4) NOT NULL | Note évaluation précédente |
-| niveau_hierarchique_poste | INTEGER | CHECK (value BETWEEN 1 AND 5) NOT NULL | Niveau hiérarchique |
-| satisfaction_employee_nature_travail | INTEGER | CHECK (value BETWEEN 1 AND 4) NOT NULL | Satisfaction nature travail |
-| satisfaction_employee_equipe | INTEGER | CHECK (value BETWEEN 1 AND 4) NOT NULL | Satisfaction équipe |
-| satisfaction_employee_equilibre_pro_perso | INTEGER | CHECK (value BETWEEN 1 AND 4) NOT NULL | Équilibre vie pro/perso |
-| note_evaluation_actuelle | INTEGER | CHECK (value BETWEEN 1 AND 4) NOT NULL | Note évaluation actuelle |
-| heure_supplementaires | VARCHAR(5) | CHECK (value IN ('Oui', 'Non')) NOT NULL | Heures supplémentaires |
-| augementation_salaire_precedente | DECIMAL(6,4) | NOT NULL | Pourcentage augmentation |
-| age | INTEGER | CHECK (age BETWEEN 18 AND 60) NOT NULL | Âge employé |
-| genre | VARCHAR(5) | CHECK (genre IN ('F', 'M')) NOT NULL | Genre |
-| revenu_mensuel | INTEGER | CHECK (revenu_mensuel BETWEEN 1000 AND 20000) NOT NULL | Salaire mensuel |
-| statut_marital | VARCHAR(20) | CHECK (value IN ('Célibataire', 'Marié(e)', 'Divorcé(e)')) NOT NULL | Statut marital |
-| departement | VARCHAR(30) | CHECK (value IN ('Commercial', 'Consulting', 'Ressources Humaines')) NOT NULL | Département |
-| poste | VARCHAR(50) | CHECK (poste IN ('Cadre Commercial', 'Assistant de Direction', 'Consultant', 'Tech Lead', 'Manager', 'Senior Manager', 'Représentant Commercial', 'Directeur Technique', 'Ressources Humaines')) NOT NULL | Poste occupé |
-| nombre_experiences_precedentes | INTEGER | CHECK (value >= 0) NOT NULL | Expériences précédentes |
-| annee_experience_totale | INTEGER | CHECK (value >= 0) NOT NULL | Expérience totale |
-| annees_dans_l_entreprise | INTEGER | CHECK (value >= 0) NOT NULL | Ancienneté entreprise |
-| annees_dans_le_poste_actuel | INTEGER | CHECK (value >= 0) NOT NULL | Ancienneté poste |
-| a_quitte_l_entreprise | VARCHAR(5) | CHECK (value IN ('Oui', 'Non')) NOT NULL | Target variable |
-| nombre_participation_pee | INTEGER | CHECK (value BETWEEN 0 AND 3) NOT NULL | Participations PEE |
-| nb_formations_suivies | INTEGER | CHECK (value BETWEEN 0 AND 6) NOT NULL | Formations suivies |
-| distance_domicile_travail | INTEGER | CHECK (value BETWEEN 1 AND 29) NOT NULL | Distance domicile |
-| niveau_education | INTEGER | CHECK (value BETWEEN 1 AND 5) NOT NULL | Niveau éducation |
-| domaine_etude | VARCHAR(50) | CHECK (domaine_etude IN ('Infra & Cloud', 'Autre', 'Transformation Digitale', 'Marketing', 'Entrepreunariat', 'Ressources Humaines')) NOT NULL | Domaine d'étude |
-| frequence_deplacement | VARCHAR(20) | CHECK (value IN ('Aucun', 'Occasionnel', 'Frequent')) NOT NULL | Fréquence déplacement |
-| annees_depuis_la_derniere_promotion | INTEGER | CHECK (value >= 0) NOT NULL | Années depuis promotion |
-| annes_sous_responsable_actuel | INTEGER | CHECK (value >= 0) NOT NULL | Années sous responsable |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Date création |
-| updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Dernière modification |
+1. **Session creation** : UUID générée automatiquement via `PredictionLoggerMiddleware`
+2. **Request logging** : Input employé (27 variables) stocké en JSONB 
+3. **ML Processing** : XGBoost preprocessing → prédiction → postprocessing
+4. **Result storage** : Output complet avec explicabilité et métadonnées
+5. **Audit trail** : Traçabilité HTTP complète pour conformité
 
-### Contraintes CHECK détaillées pour variables catégorielles
+### Table `employees` - Dataset Projet 4 (1470 lignes)
 
+**Variables de satisfaction (échelle 1-4)**
+- `satisfaction_employee_environnement`
+- `satisfaction_employee_nature_travail`
+- `satisfaction_employee_equipe`
+- `satisfaction_employee_equilibre_pro_perso`
+
+**Variables d'évaluation (échelle 1-4)**
+- `note_evaluation_precedente`
+- `note_evaluation_actuelle`
+
+**Variables catégorielles avec contraintes CHECK**
 ```sql
--- Contrainte pour poste (9 valeurs possibles)
-ALTER TABLE employees ADD CONSTRAINT check_poste 
-CHECK (poste IN (
-    'Cadre Commercial',
-    'Assistant de Direction', 
-    'Consultant',
-    'Tech Lead',
-    'Manager',
-    'Senior Manager',
-    'Représentant Commercial',
-    'Directeur Technique',
-    'Ressources Humaines'
-));
+-- Départements (3 valeurs)
+departement IN ('Commercial', 'Consulting', 'Ressources Humaines')
 
--- Contrainte pour domaine_etude (6 valeurs possibles) 
-ALTER TABLE employees ADD CONSTRAINT check_domaine_etude
-CHECK (domaine_etude IN (
-    'Infra & Cloud',
-    'Autre', 
-    'Transformation Digitale',
-    'Marketing',
-    'Entrepreunariat',
-    'Ressources Humaines'
-));
+-- Postes (9 valeurs validées)
+poste IN (
+    'Cadre Commercial', 'Assistant de Direction', 'Consultant',
+    'Tech Lead', 'Manager', 'Senior Manager',
+    'Représentant Commercial', 'Directeur Technique', 'Ressources Humaines'
+)
+
+-- Domaines d'étude (6 valeurs)
+domaine_etude IN (
+    'Infra & Cloud', 'Autre', 'Transformation Digitale',
+    'Marketing', 'Entrepreneuriat', 'Ressources Humaines'
+)
+
+-- Fréquence déplacement (3 niveaux pour encodage ordinal)
+frequence_deplacement IN ('Aucun', 'Voyage_Rare', 'Voyage_Fréquent')
 ```
 
-## Index de performance pour `employees`
+**Target variable**
+- `a_quitte_l_entreprise` : Variable cible binaire (Oui/Non)
+
+### Table `prediction_sessions` - Regroupement logique
+
+**Types de sessions**
+- `single` : Prédiction individuelle
+- `batch` : Prédictions multiples (max 100 employés)
+
+**Statuts de session**
+- `pending` : En cours de traitement
+- `completed` : Terminée avec succès
+- `failed` : Échec avec message d'erreur
+
+**Métadonnées JSONB**
+```json
+{
+  "client_ip": "192.168.1.1",
+  "user_agent": "Mozilla/5.0...",
+  "endpoint": "/api/v1/predict/single",
+  "batch_size": 1,
+  "processing_stats": {...}
+}
+```
+
+### Table `prediction_requests` - Inputs ML tracés
+
+**Structure input_data (JSONB)**
+```json
+{
+  "satisfaction_employee_environnement": 4,
+  "satisfaction_employee_nature_travail": 4,
+  "age": 35,
+  "genre": "Homme",
+  "revenu_mensuel": 4500,
+  "departement": "Consulting",
+  "poste": "Senior Manager",
+  // ... 20 autres variables
+}
+```
+
+**Sources de requête**
+- `api` : Appels directs via FastAPI
+- `batch` : Traitement par lots
+- `test` : Tests automatisés
+
+### Table `prediction_results` - Outputs ML complets
+
+**Structure de sortie**
+- **Prédiction binaire** : Oui/Non (seuil 0.514 optimisé)
+- **Probabilités** : quit + stay = 1.0 (contrainte CHECK)
+- **Niveau de confiance** : Basé sur probabilité maximale
+  - Élevé : > 0.8
+  - Moyen : 0.6-0.8
+  - Faible : < 0.6
+
+**Facteurs de risque (TEXT[])**
 ```sql
--- Index sur les colonnes de recherche fréquente
+risk_factors = ARRAY[
+    'Satisfaction environnement très faible',
+    'Heures supplémentaires fréquentes',
+    'Pas d augmentation récente'
+]
+```
+
+**Métadonnées de traçabilité**
+- `model_version` : Version XGBoost utilisée
+- `processing_time_ms` : Performance mesurée
+- `created_at` : Timestamp UTC précis
+
+### Table `model_metadata` - Versioning ML
+
+**Performance metrics (JSONB)**
+```json
+{
+  "accuracy": 0.8588,
+  "accuracy_std": 0.0220,
+  "precision": 0.5654,
+  "recall": 0.5684,
+  "f1_score": 0.5656,
+  "roc_auc": 0.8252,
+  "threshold_optimized": 0.514
+}
+```
+
+**Feature importance (JSONB)**
+```json
+{
+  "heure_supplementaires": 0.741383,
+  "nombre_participation_pee": 0.467252,
+  "nombre_experiences_precedentes": 0.446803,
+  "revenu_mensuel": 0.424747,
+  "distance_domicile_travail": 0.404249
+}
+```
+
+### Table `api_audit_logs` - Conformité et monitoring
+
+**Audit complet HTTP**
+- **Headers** : User-Agent, Accept, Authorization (filtrés)
+- **Payload** : Request/Response body complets
+- **Performance** : Temps de réponse précis
+- **Géolocation** : IP client (type INET PostgreSQL)
+
+**Use cases métier**
+1. **Debugging** : Traçabilité complète des erreurs
+2. **Performance** : Analyse temps de réponse
+3. **Sécurité** : Détection d'usage anormal
+4. **Conformité RGPD** : Audit trail des prédictions
+
+## Index de performance optimisés
+
+### Index sur `employees` (recherches fréquentes)
+```sql
 CREATE INDEX idx_employees_departement ON employees(departement);
-CREATE INDEX idx_employees_poste ON employees(poste);
-CREATE INDEX idx_employees_target ON employees(a_quitte_l_entreprise);
-CREATE INDEX idx_employees_age_revenu ON employees(age, revenu_mensuel);
-CREATE INDEX idx_employees_created_at ON employees(created_at);
+CREATE INDEX idx_employees_attrition ON employees(a_quitte_l_entreprise);
+CREATE INDEX idx_employees_demographics ON employees(age, revenu_mensuel);
 ```
 
-### Table `prediction_sessions` (Métadonnées des sessions)
-| Colonne | Type SQL | Contraintes | Description |
-|---------|----------|-------------|-------------|
-| session_id | UUID PRIMARY KEY | DEFAULT gen_random_uuid() | ID unique session |
-| session_type | VARCHAR(10) | CHECK (session_type IN ('single', 'batch')) NOT NULL | Type de session |
-| total_predictions | INTEGER | DEFAULT 0 | Nombre total prédictions |
-| status | VARCHAR(20) | CHECK (status IN ('pending', 'completed', 'failed')) DEFAULT 'pending' | Statut session |
-| started_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Début session |
-| completed_at | TIMESTAMP | NULL | Fin session |
-| error_message | TEXT | NULL | Message d'erreur si échec |
-| session_metadata | JSONB | NULL | Métadonnées additionnelles |
-
-### Table `prediction_requests` (Inputs du modèle)
-| Colonne | Type SQL | Contraintes | Description |
-|---------|----------|-------------|-------------|
-| request_id | SERIAL PRIMARY KEY | NOT NULL | ID unique requête |
-| session_id | UUID | REFERENCES prediction_sessions(session_id) NOT NULL | Session parente |
-| employee_id | INTEGER | REFERENCES employees(employee_id) NULL | Employé source (si applicable) |
-| input_data | JSONB | NOT NULL | Données d'entrée complètes |
-| request_source | VARCHAR(20) | CHECK (request_source IN ('api', 'batch', 'test')) DEFAULT 'api' | Source requête |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Date création |
-
-### Table `prediction_results` (Outputs du modèle)
-| Colonne | Type SQL | Contraintes | Description |
-|---------|----------|-------------|-------------|
-| result_id | SERIAL PRIMARY KEY | NOT NULL | ID unique résultat |
-| request_id | INTEGER | REFERENCES prediction_requests(request_id) NOT NULL | Requête source |
-| prediction | VARCHAR(5) | CHECK (prediction IN ('Oui', 'Non')) NOT NULL | Prédiction |
-| probability_quit | DECIMAL(6,4) | CHECK (probability_quit BETWEEN 0 AND 1) NOT NULL | Probabilité départ |
-| probability_stay | DECIMAL(6,4) | CHECK (probability_stay BETWEEN 0 AND 1) NOT NULL | Probabilité rester |
-| confidence_level | VARCHAR(10) | CHECK (confidence_level IN ('Faible', 'Moyen', 'Élevé')) NOT NULL | Niveau confiance |
-| risk_factors | TEXT[] | NULL | Facteurs de risque |
-| model_version | VARCHAR(20) | NOT NULL | Version modèle utilisé |
-| processing_time_ms | DECIMAL(10,2) | NULL | Temps de traitement |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Date création |
-
-### Table `model_metadata` (Versioning des modèles)
-| Colonne | Type SQL | Contraintes | Description |
-|---------|----------|-------------|-------------|
-| model_id | SERIAL PRIMARY KEY | NOT NULL | ID unique modèle |
-| model_name | VARCHAR(100) | NOT NULL | Nom du modèle |
-| version | VARCHAR(20) | NOT NULL UNIQUE | Version (ex: "1.0.0") |
-| algorithm_type | VARCHAR(50) | DEFAULT 'XGBoost' | Type d'algorithme |
-| threshold_value | DECIMAL(6,4) | DEFAULT 0.5 | Seuil de décision |
-| performance_metrics | JSONB | NULL | Métriques performance |
-| feature_importance | JSONB | NULL | Importance des features |
-| model_file_path | VARCHAR(255) | NULL | Chemin fichier modèle |
-| is_active | BOOLEAN | DEFAULT TRUE | Modèle actif |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Date création |
-| deprecated_at | TIMESTAMP | NULL | Date dépréciation |
-
-### Table `api_audit_logs` (Audit complet API)
-| Colonne | Type SQL | Contraintes | Description |
-|---------|----------|-------------|-------------|
-| log_id | BIGSERIAL PRIMARY KEY | NOT NULL | ID unique log |
-| session_id | UUID | REFERENCES prediction_sessions(session_id) NULL | Session associée |
-| endpoint_called | VARCHAR(100) | NOT NULL | Endpoint appelé |
-| http_method | VARCHAR(10) | NOT NULL | Méthode HTTP |
-| client_ip | INET | NULL | IP client |
-| user_agent | TEXT | NULL | User agent |
-| request_headers | JSONB | NULL | Headers requête |
-| request_payload | JSONB | NULL | Payload requête |
-| response_status_code | INTEGER | NOT NULL | Code statut réponse |
-| response_payload | JSONB | NULL | Payload réponse |
-| response_time_ms | DECIMAL(10,2) | NULL | Temps de réponse |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Timestamp log |
-
-## Relations et contraintes
-
-### Relations principales
-- **employees** ← prediction_requests (optionnel, pour traçabilité source)
-- **prediction_sessions** → prediction_requests (1:N)
-- **prediction_requests** → prediction_results (1:1)
-- **prediction_sessions** ← api_audit_logs (optionnel, pour audit)
-
-### Contraintes métier
-1. **Cohérence probabilités** : `probability_quit + probability_stay = 1.0`
-2. **Session complétée** : Si `status = 'completed'`, alors `completed_at IS NOT NULL`
-3. **Résultat unique** : Chaque `request_id` ne peut avoir qu'un seul résultat
-4. **Modèle actif unique** : Un seul modèle avec `is_active = TRUE` par version
-
-## Index de performance
+### Index sur tables de prédiction (analytiques)
 ```sql
--- Sessions
-CREATE INDEX idx_sessions_type_status ON prediction_sessions(session_type, status);
-CREATE INDEX idx_sessions_started_at ON prediction_sessions(started_at);
+-- Sessions actives
+CREATE INDEX idx_sessions_status_date ON prediction_sessions(status, started_at);
 
--- Requêtes
-CREATE INDEX idx_requests_session_id ON prediction_requests(session_id);
-CREATE INDEX idx_requests_created_at ON prediction_requests(created_at);
+-- Prédictions récentes
+CREATE INDEX idx_results_date_prediction ON prediction_results(created_at, prediction);
 
--- Résultats  
-CREATE INDEX idx_results_request_id ON prediction_results(request_id);
-CREATE INDEX idx_results_prediction ON prediction_results(prediction);
-CREATE INDEX idx_results_model_version ON prediction_results(model_version);
-
--- Audit logs
-CREATE INDEX idx_audit_session_id ON api_audit_logs(session_id);
-CREATE INDEX idx_audit_endpoint ON api_audit_logs(endpoint_called);
-CREATE INDEX idx_audit_created_at ON api_audit_logs(created_at);
+-- Audit par endpoint
+CREATE INDEX idx_audit_endpoint_date ON api_audit_logs(endpoint_called, created_at);
 ```
 
-## Volumétrie estimée (local)
-- **employees** : 1,470 lignes (fixe)
-- **prediction_sessions** : ~100/jour
-- **prediction_requests** : ~500/jour  
-- **prediction_results** : ~500/jour
-- **api_audit_logs** : ~1000/jour
+## Contraintes métier critiques
 
-**Total estimé après 1 an** : ~400k lignes (acceptable en local)
+### Cohérence probabiliste
+```sql
+ALTER TABLE prediction_results ADD CONSTRAINT check_probabilities
+CHECK (ABS((probability_quit + probability_stay) - 1.0) < 0.001);
+```
+
+### Session completion logic
+```sql
+ALTER TABLE prediction_sessions ADD CONSTRAINT check_completion
+CHECK (
+    (status = 'completed' AND completed_at IS NOT NULL) OR
+    (status != 'completed')
+);
+```
+
+### Modèle actif unique
+```sql
+CREATE UNIQUE INDEX idx_active_model_version 
+ON model_metadata (version) WHERE is_active = TRUE;
+```
+
+## Volumétrie et archivage (environnement local)
+
+### Estimation données (1 an)
+- **employees** : 1,470 lignes (statique)
+- **prediction_sessions** : ~36,500 lignes (100/jour)
+- **prediction_requests** : ~182,500 lignes (500/jour)
+- **prediction_results** : ~182,500 lignes (500/jour)
+- **api_audit_logs** : ~365,000 lignes (1000/jour)
+
+**Total** : ~767k lignes (acceptable PostgreSQL local)
+
+### Stratégie d'archivage recommandée
+```sql
+-- Archivage mensuel des logs > 6 mois
+CREATE TABLE api_audit_logs_archive AS 
+SELECT * FROM api_audit_logs 
+WHERE created_at < CURRENT_DATE - INTERVAL '6 months';
+
+-- Nettoyage avec préservation des données ML
+DELETE FROM api_audit_logs 
+WHERE created_at < CURRENT_DATE - INTERVAL '6 months'
+AND endpoint_called NOT LIKE '/api/v1/predict/%';
+```
+
+## Vues métier utiles
+
+### Vue prédictions avec contexte
+```sql
+CREATE VIEW v_predictions_enriched AS
+SELECT 
+    pr.prediction,
+    pr.probability_quit,
+    pr.confidence_level,
+    pr.model_version,
+    ps.session_type,
+    e.departement,
+    e.poste,
+    pr.created_at
+FROM prediction_results pr
+JOIN prediction_requests req ON pr.request_id = req.request_id
+JOIN prediction_sessions ps ON req.session_id = ps.session_id
+LEFT JOIN employees e ON req.employee_id = e.employee_id
+ORDER BY pr.created_at DESC;
+```
+
+### Statistiques par département
+```sql
+CREATE VIEW v_attrition_by_department AS
+SELECT 
+    departement,
+    COUNT(*) as total_employees,
+    SUM(CASE WHEN a_quitte_l_entreprise = 'Oui' THEN 1 ELSE 0 END) as attrition_count,
+    ROUND(AVG(CASE WHEN a_quitte_l_entreprise = 'Oui' THEN 1.0 ELSE 0.0 END) * 100, 2) as attrition_rate_pct
+FROM employees
+GROUP BY departement
+ORDER BY attrition_rate_pct DESC;
+```

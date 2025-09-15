@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI):
     """Gestion du cycle de vie de l'application FastAPI"""
     logger.info("🚀 Démarrage de l'API Futurisys ML...")
     
-    # 1. Initialisation de la base de données
+    # Initialisation de la base de données
     try:
         logger.info("📊 Initialisation PostgreSQL...")
         db_manager = DatabaseManager()
@@ -37,7 +37,7 @@ async def lifespan(app: FastAPI):
         logger.error(f"❌ Erreur PostgreSQL: {e}")
         app.state.db_manager = None
     
-    # 2. Chargement du modèle ML
+    # Chargement du modèle ML
     try:
         ml_model = MLModel()
         ml_model.load_model()
@@ -239,3 +239,12 @@ try:
     app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["Analytics"])
 except ImportError as e:
     logger.warning(f"⚠️ Routers optionnels non disponibles: {e}")
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        log_level="info"
+    )

@@ -4,7 +4,7 @@ name: Deploy to Hugging Face Spaces
 # Définit les événements déclencheurs du workflow
 on:
   push:
-    branches: [ main, develop ] # Se déclenche lors d'un push sur main ou develop
+    branches: [ main, develop ]
   pull_request:
     branches: [ main ] # Se déclenche lors d'une Pull request (PR) vers main
 
@@ -20,6 +20,7 @@ jobs:
       uses: actions/setup-python@v4   # Configure l'environnement Python
       with:
         python-version: '3.11'
+        cache: 'pip'
     
     - name: Install dependencies
       run: |

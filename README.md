@@ -339,12 +339,11 @@ ENVIRONMENT=development
 #### 5. Initialisation de la base de données
 
 ```bash
-# Méthode automatisée
-cd database
-python create_db.py
+# Méthode automatisée (Architecture ORM unifiée)
+python database/python/import_dataset.py --file data/dataset_projet4.csv
 
-# Vérification de la création
-python create_db.py --info
+# Ou création manuelle des tables
+python -c "from app.database.models import Base; from app.database.connection import DatabaseManager; db = DatabaseManager(); Base.metadata.create_all(bind=db.engine); print('Tables créées!')"
 ```
 
 #### 6. Import des données (optionnel)
@@ -776,7 +775,7 @@ pip install -r requirements.txt
 
 # Tests et validation
 pytest tests/ --cov=app
-python database/create_db.py
+python database/python/import_dataset.py
 uvicorn app.main:app --reload
 ```
 

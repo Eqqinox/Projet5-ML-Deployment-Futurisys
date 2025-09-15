@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script d'import du dataset du Projet 4 dans PostgreSQL - VERSION AUTONOME
+Script d'import du dataset du Projet 4 dans PostgreSQL
 Import des 1470 employés avec leurs 27 features + variable cible
 """
 
@@ -13,14 +13,12 @@ import logging
 from datetime import datetime
 from dotenv import load_dotenv
 
-from sqlalchemy import (
-    create_engine, Column, Integer, String, Boolean, DateTime, 
-    Numeric, Text, ForeignKey, func
-)
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy.dialects.postgresql import UUID, JSONB, INET, ARRAY
-import uuid
+from sqlalchemy import create_engine, func
+from sqlalchemy.orm import sessionmaker
+
+# Import des modèles depuis l'application
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from app.database.models import Employee, Base
 
 # Charger les variables d'environnement
 load_dotenv()
@@ -36,44 +34,6 @@ class Settings:
 
 settings = Settings()
 
-# Base SQLAlchemy (reproduction du modèle Employee)
-Base = declarative_base()
-
-class Employee(Base):
-    """Modèle Employee pour l'import"""
-    __tablename__ = 'employees'
-    
-    employee_id = Column(Integer, primary_key=True, autoincrement=True)
-    satisfaction_employee_environnement = Column(Integer, nullable=False)
-    satisfaction_employee_nature_travail = Column(Integer, nullable=False)
-    satisfaction_employee_equipe = Column(Integer, nullable=False)
-    satisfaction_employee_equilibre_pro_perso = Column(Integer, nullable=False)
-    note_evaluation_precedente = Column(Integer, nullable=False)
-    note_evaluation_actuelle = Column(Integer, nullable=False)
-    niveau_hierarchique_poste = Column(Integer, nullable=False)
-    heure_supplementaires = Column(String(5), nullable=False)
-    augementation_salaire_precedente = Column(Numeric(6,4), nullable=False)
-    age = Column(Integer, nullable=False)
-    genre = Column(String(5), nullable=False)
-    revenu_mensuel = Column(Integer, nullable=False)
-    statut_marital = Column(String(20), nullable=False)
-    departement = Column(String(30), nullable=False)
-    poste = Column(String(50), nullable=False)
-    nombre_experiences_precedentes = Column(Integer, nullable=False)
-    annee_experience_totale = Column(Integer, nullable=False)
-    annees_dans_l_entreprise = Column(Integer, nullable=False)
-    annees_dans_le_poste_actuel = Column(Integer, nullable=False)
-    annees_depuis_la_derniere_promotion = Column(Integer, nullable=False)
-    annes_sous_responsable_actuel = Column(Integer, nullable=False)
-    nombre_participation_pee = Column(Integer, nullable=False)
-    nb_formations_suivies = Column(Integer, nullable=False)
-    distance_domicile_travail = Column(Integer, nullable=False)
-    niveau_education = Column(Integer, nullable=False)
-    domaine_etude = Column(String(50), nullable=False)
-    frequence_deplacement = Column(String(20), nullable=False)
-    a_quitte_l_entreprise = Column(String(5), nullable=False)
-    created_at = Column(DateTime, default=func.current_timestamp())
-    updated_at = Column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
 
 # Configuration du logging
 logging.basicConfig(
@@ -103,10 +63,14 @@ def create_engine_with_settings(database_url: str = None, echo: bool = False):
 
 class DatasetImporter:
     """Classe pour importer le dataset du Projet 4 dans PostgreSQL"""
-    
+
     def __init__(self, database_url: str = None):
         self.engine = create_engine_with_settings(database_url)
         self.SessionLocal = sessionmaker(bind=self.engine)
+
+        # Création des tables si elles n'existent pas
+        Base.metadata.create_all(bind=self.engine)
+
         self.stats = {
             'total_rows': 0,
             'imported_rows': 0,

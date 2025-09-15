@@ -88,30 +88,23 @@ MODEL_VERSION=1.0.0
 
 ## 🚀 Utilisation des scripts
 
-### Option 1 : Script SQL (Méthode directe)
-
-```bash
-# Exécution du script SQL complet
-psql -h localhost -U futurisys_user -d futurisys_ml -f database/create_database.sql
-
-# Vérification des tables créées
-psql -h localhost -U futurisys_user -d futurisys_ml -c "\dt"
-```
-
-### Option 2 : Script Python (Recommandé)
+### Méthode unique : Approche ORM SQLAlchemy
 
 ```bash
 # Installation des dépendances Python
 pip install -r requirements.txt
 
-# Création de la base avec le script Python
-cd database
-python create_db.py
+# Import du dataset (crée automatiquement la structure)
+python database/python/import_dataset.py --file dataset_projet4.csv
 
-# Options avancées
-python create_db.py --drop --info  # Supprime et recrée tout
-python create_db.py --quiet         # Mode silencieux
-python create_db.py --url "postgresql://user:pass@host:5432/db"  # URL custom
+# Ou création manuelle via Python
+python -c "
+from app.database.models import Base
+from app.database.connection import DatabaseManager
+db = DatabaseManager()
+Base.metadata.create_all(bind=db.engine)
+print('Tables créées avec succès!')
+"
 ```
 
 #### Sortie attendue du script Python
@@ -229,12 +222,11 @@ FROM employees;
 
 ```python
 # Vérification rapide avec Python
-from database.create_db import Employee, create_engine_with_settings
-from sqlalchemy.orm import sessionmaker
+from app.database.models import Employee
+from app.database.connection import DatabaseManager
 
-engine = create_engine_with_settings()
-Session = sessionmaker(bind=engine)
-session = Session()
+db = DatabaseManager()
+session = db.get_session()
 
 # Comptages
 total = session.query(Employee).count()
@@ -289,9 +281,10 @@ GRANT ALL PRIVILEGES ON DATABASE futurisys_ml TO futurisys_user;
 ```
 ERROR: database "futurisys_ml" already exists
 ```
-**Solution :** Utiliser l'option `--drop` ou supprimer manuellement
-```bash
-python create_db.py --drop
+**Solution :** Supprimer manuellement la base
+```sql
+DROP DATABASE IF EXISTS futurisys_ml;
+CREATE DATABASE futurisys_ml;
 ```
 
 #### 4. Fichier CSV non trouvé
@@ -317,10 +310,10 @@ ValueError: Dataset contient des données invalides
 ```bash
 # Activer les logs détaillés pour PostgreSQL
 export LOG_LEVEL=DEBUG
-python create_db.py --info
+python database/python/import_dataset.py --file dataset.csv
 
-# Logs SQL visibles
-python create_db.py  # avec echo=True dans le code
+# Logs SQL visibles dans SQLAlchemy
+# Modifier app/database/connection.py : echo=True
 ```
 
 ## 📊 Structure finale de la base

@@ -1,7 +1,6 @@
 """
 Wrapper pour le modèle XGBoost de prédiction d'attrition
 Gestion du chargement, des prédictions et de l'explicabilité
-IMPORTANT: Adapté à l'encodage OneHot du Projet 4
 """
 
 import joblib
@@ -22,13 +21,13 @@ logger = logging.getLogger(__name__)
 class MLModel:
     """
     Wrapper pour le modèle XGBoost de prédiction d'attrition des employés
-    Adapté à l'encodage OneHot utilisé dans le Projet 4
+    Adaptation de l'encodage OneHot utilisé dans le Projet 4
     """
     
     def __init__(self):
         self.model = None
-        self.model_version = settings.MODEL_VERSION
-        self.threshold = 0.514  # Seuil optimal de votre Projet 4
+        self.ml_model_version = settings.MODEL_VERSION
+        self.threshold = 0.514  # Seuil optimal du Model
         
         # Encodeurs (chargés depuis les fichiers sauvegardés du Projet 4)
         self.onehot_encoder = None
@@ -113,23 +112,23 @@ class MLModel:
             # Créer un DataFrame avec une seule ligne
             df = pd.DataFrame([data_dict])
             
-            # 1. Encodage binaire pour heure_supplementaires
+            # Encodage binaire pour heure_supplementaires
             df.loc[df['heure_supplementaires'] == 'Non', 'heure_supplementaires'] = 0
             df.loc[df['heure_supplementaires'] == 'Oui', 'heure_supplementaires'] = 1
             df['heure_supplementaires'] = df['heure_supplementaires'].astype(int)
             
-            # 2. Encodage binaire pour genre (adapter selon vos données d'entrée)
+            # Encodage binaire pour genre (adapter selon vos données d'entrée)
             # Note: Votre schéma Pydantic utilise "Homme"/"Femme" mais votre code "M"/"F"
             # Adaptation nécessaire:
             df.loc[df['genre'] == 'Femme', 'genre'] = 0
             df.loc[df['genre'] == 'Homme', 'genre'] = 1
             df['genre'] = df['genre'].astype(int)
             
-            # 3. augementation_salaire_precedente reste float (c'est déjà un pourcentage)
+            # Augementation_salaire_precedente reste float (c'est déjà un pourcentage)
             # Pas de transformation nécessaire
             
-            # 4. Encodage ordinal pour frequence_deplacement
-            # Adapter les valeurs du schéma vers vos valeurs d'entraînement
+            # Encodage ordinal pour frequence_deplacement
+            # Adapter les valeurs du schéma vers les valeurs d'entraînement
             freq_mapping = {
                 'Pas_de_Voyage': 'Aucun',
                 'Voyage_Rare': 'Occasionnel', 
@@ -138,7 +137,7 @@ class MLModel:
             df['frequence_deplacement'] = df['frequence_deplacement'].map(freq_mapping)
             df[['frequence_deplacement']] = self.ordinal_encoder.transform(df[['frequence_deplacement']])
             
-            # 5. Encodage OneHot pour les variables nominales
+            # Encodage OneHot pour les variables nominales
             df_categorical = df[self.variables_catego]
             df_encoded = self.onehot_encoder.transform(df_categorical)
             
@@ -207,7 +206,7 @@ class MLModel:
                 probability_stay=round(prob_stay, 4),
                 confidence_level=confidence_level,
                 risk_factors=risk_factors,
-                model_version=self.model_version,
+                model_version=self.ml_model_version,
                 timestamp=datetime.now()
             )
             
@@ -248,7 +247,6 @@ class MLModel:
     def _identify_risk_factors(self, employee: EmployeeData) -> List[str]:
         """
         Identifie les facteurs de risque basiques
-        Cette fonction peut être améliorée avec SHAP values
         """
         risk_factors = []
         
@@ -281,13 +279,13 @@ class MLModel:
         base_info = {
             "model_name": "XGBoost Employee Attrition Classifier",
             "model_type": "XGBoost Classifier", 
-            "version": self.model_version,
+            "version": self.ml_model_version,
             "threshold": self.threshold,
             "is_loaded": self.is_loaded,
             "encoding": "OneHot pour variables nominales, Ordinal pour fréquence",
         }
         
-        # Ajouter les informations du Projet 4 si disponibles
+        # Ajouter les informations du Projet 4
         if self.model_info:
             base_info.update({
                 "original_features": self.model_info.get('original_features_count', 27),

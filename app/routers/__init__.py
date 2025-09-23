@@ -1,0 +1,3 @@
+"""
+Package des routeurs FastAPI
+"""

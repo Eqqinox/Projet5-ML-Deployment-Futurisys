@@ -2,11 +2,14 @@
 FROM python:3.11-slim
 
 # Définir le répertoire de travail
-WORKDIR /app
+WORKDIR /code
 
 # Variables d'environnement pour HF Spaces
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/code
 ENV PORT=7860
+
+# Force rebuild - Sync health endpoints to single endpoint only
+ENV BUILD_TIMESTAMP=20250909_143500
 
 # Installer les dépendances système nécessaires
 RUN apt-get update && apt-get install -y \
@@ -19,9 +22,11 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copier le point d'entrée pour HF Spaces
-COPY hf_app.py .
-COPY README.md .
+# Copier tout le projet
+COPY . /code/
+
+# Créer le dossier logs si nécessaire
+RUN mkdir -p /code/logs
 
 # Exposer le port requis par HF Spaces
 EXPOSE 7860

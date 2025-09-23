@@ -142,6 +142,10 @@ graph TB
 - **[SQLAlchemy 2.0+](https://sqlalchemy.org)** - ORM Python (Object-Relational Mapping)
 - **[Alembic 1.13+](https://alembic.sqlalchemy.org)** - Migrations de schéma versionnées
 
+📊 **Documentation de la base de données** :
+- **[Schéma UML de la base de données](https://github.com/Eqqinox/Projet5-ML-Deployment-Futurisys/blob/develop/database/documentation/database_shema_uml.md)** - Diagramme ERD et architecture détaillée
+- **[Guide d'installation de la base de données](https://github.com/Eqqinox/Projet5-ML-Deployment-Futurisys/blob/develop/database/documentation/setup_guide.md)** - Instructions complètes pour PostgreSQL
+
 #### **Machine Learning & Data Science**
 - **[XGBoost 3.0.4+](https://xgboost.readthedocs.io)** - Gradient Boosting optimisé (modèle principal)
 - **[Scikit-learn 1.7.1+](https://scikit-learn.org)** - Preprocessing, métriques et pipeline ML

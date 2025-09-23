@@ -1,6 +1,7 @@
 """
 Modèles SQLAlchemy pour l'API Futurisys
-Réutilisation des modèles de database/python/create_db.py avec adaptations pour l'API
+Définition des tables PostgreSQL basée sur le dataset du projet 4 (1470 employés)
+Architecture unifié pour l'import de données et l'API de prédiction ML
 """
 
 # Imports SQLAlchemy pour définition des tables et relations
